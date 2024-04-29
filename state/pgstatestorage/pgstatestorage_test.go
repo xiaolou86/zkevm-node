@@ -1667,6 +1667,48 @@ func TestGetLastGER(t *testing.T) {
 
 }
 
+func TestAddBlobSequence(t *testing.T) {
+	initOrResetDB()
+	ctx := context.Background()
+	dbTx, err := testState.BeginStateTransaction(ctx)
+	require.NoError(t, err)
+	defer func() { require.NoError(t, dbTx.Commit(ctx)) }()
+
+	block := state.NewBlock(100)
+	err = testState.AddBlock(ctx, block, dbTx)
+	require.NoError(t, err)
+
+	blobSeq := state.BlobSequence{
+		BlobSequenceIndex: 1,
+		BlockNumber:       100,
+	}
+	err = testState.AddBlobSequence(ctx, &blobSeq, dbTx)
+	require.NoError(t, err)
+}
+
+func TestStoreBlobInner(t *testing.T) {
+	initOrResetDB()
+	ctx := context.Background()
+	dbTx, err := testState.BeginStateTransaction(ctx)
+	require.NoError(t, err)
+	defer func() { require.NoError(t, dbTx.Commit(ctx)) }()
+	block := state.NewBlock(100)
+	err = testState.AddBlock(ctx, block, dbTx)
+	require.NoError(t, err)
+
+	blobSeq := state.BlobSequence{
+		BlobSequenceIndex: 1,
+		BlockNumber:       100,
+	}
+	err = testState.AddBlobSequence(ctx, &blobSeq, dbTx)
+	require.NoError(t, err)
+	blobInner := state.BlobInner{
+		BlobSequenceIndex: 1,
+	}
+	err = testState.AddBlobInner(ctx, &blobInner, dbTx)
+	require.NoError(t, err)
+}
+
 func TestGetFirstUncheckedBlock(t *testing.T) {
 	var err error
 	blockNumber := uint64(51001)

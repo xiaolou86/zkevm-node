@@ -11,28 +11,29 @@ import (
 )
 
 // AddBlobSequence adds a new blob sequence to the state.
+// TODO: Add support to ReceivedAt
 func (p *PostgresStorage) AddBlobSequence(ctx context.Context, blobSequence *state.BlobSequence, dbTx pgx.Tx) error {
-	const addBlobSequenceSQL = "INSERT INTO state.blob_sequence (index, coinbase, final_acc_input_hash, last_blob_sequenced, create_at) VALUES ($1, $2, $3, $4, $5)"
+	const addBlobSequenceSQL = "INSERT INTO state.blob_sequence (index, block_num, coinbase, final_acc_input_hash, first_blob_sequenced, last_blob_sequenced, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)"
 
 	e := p.getExecQuerier(dbTx)
-	_, err := e.Exec(ctx, addBlobSequenceSQL, blobSequence.Index, blobSequence.L2Coinbase, blobSequence.FinalAccInputHash, blobSequence.LastBlobSequenced, blobSequence.CreateAt)
+	_, err := e.Exec(ctx, addBlobSequenceSQL, blobSequence.BlobSequenceIndex, blobSequence.BlockNumber, blobSequence.L2Coinbase.String(), blobSequence.FinalAccInputHash.String(), blobSequence.FirstBlobSequenced, blobSequence.LastBlobSequenced, blobSequence.CreateAt)
 	return err
 }
 
 // GetLastBlobSequence returns the last blob sequence stored in the state.
+// TODO: Add support to ReceivedAt
 func (p *PostgresStorage) GetLastBlobSequence(ctx context.Context, dbTx pgx.Tx) (*state.BlobSequence, error) {
 	var (
 		coinbase          string
 		finalAccInputHash string
-		lastBlobSequenced uint64
 		createAt          time.Time
 		blobSequence      state.BlobSequence
 	)
-	const getLastBlobSequenceSQL = "SELECT index, coinbase, final_acc_input_hash, last_blob_sequenced, create_at FROM state.blob_sequence ORDER BY index DESC LIMIT 1"
+	const getLastBlobSequenceSQL = "SELECT index, coinbase, final_acc_input_hash, first_blob_sequenced, last_blob_sequenced, created_at FROM state.blob_sequence ORDER BY index DESC LIMIT 1"
 
 	q := p.getExecQuerier(dbTx)
 
-	err := q.QueryRow(ctx, getLastBlobSequenceSQL).Scan(&blobSequence.Index, &coinbase, &finalAccInputHash, &lastBlobSequenced, &createAt)
+	err := q.QueryRow(ctx, getLastBlobSequenceSQL).Scan(&blobSequence.BlobSequenceIndex, &coinbase, &finalAccInputHash, &blobSequence.FirstBlobSequenced, &blobSequence.LastBlobSequenced, &createAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		// If none on database return a nil object
 		return nil, nil
@@ -42,7 +43,6 @@ func (p *PostgresStorage) GetLastBlobSequence(ctx context.Context, dbTx pgx.Tx) 
 	}
 	blobSequence.L2Coinbase = common.HexToAddress(coinbase)
 	blobSequence.FinalAccInputHash = common.HexToHash(finalAccInputHash)
-	blobSequence.LastBlobSequenced = lastBlobSequenced
 	blobSequence.CreateAt = createAt
 	return &blobSequence, nil
 }
