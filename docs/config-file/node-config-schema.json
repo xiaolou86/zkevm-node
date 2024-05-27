@@ -539,9 +539,9 @@
 				},
 				"L1BlockCheck": {
 					"properties": {
-						"Enable": {
+						"Enabled": {
 							"type": "boolean",
-							"description": "Enable if is true then the check l1 Block Hash is active",
+							"description": "If enabled then the check l1 Block Hash is active",
 							"default": true
 						},
 						"L1SafeBlockPoint": {
@@ -564,9 +564,9 @@
 							"description": "ForceCheckBeforeStart if is true then the first time the system is started it will force to check all pending blocks",
 							"default": true
 						},
-						"PreCheckEnable": {
+						"PreCheckEnabled": {
 							"type": "boolean",
-							"description": "PreCheckEnable if is true then the pre-check is active, will check blocks between L1SafeBlock and L1PreSafeBlock",
+							"description": "If enabled then the pre-check is active, will check blocks between L1SafeBlock and L1PreSafeBlock",
 							"default": true
 						},
 						"L1PreSafeBlockPoint": {
@@ -698,6 +698,11 @@
 				},
 				"L2Synchronization": {
 					"properties": {
+						"Enabled": {
+							"type": "boolean",
+							"description": "If enabled then the L2 sync process is permitted (only for permissionless)",
+							"default": true
+						},
 						"AcceptEmptyClosedBatches": {
 							"type": "boolean",
 							"description": "AcceptEmptyClosedBatches is a flag to enable or disable the acceptance of empty batches.\nif true, the synchronizer will accept empty batches and process them.",
